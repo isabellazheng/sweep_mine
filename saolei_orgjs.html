@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>最简版扫雷_纯js</title>
+</head>
+<style>
+.active{
+    background-color: palevioletred;
+    color:white;
+}
+    button{
+        border:1px solid #eee
+    }
+</style>
+<body>
+<div style="text-align: center">
+    <button onclick="restart()">重启</button>
+    <button onclick="restart(9,10)">9*9,雷数10</button>
+    <button onclick="restart(12,15)">12*12,雷数15</button>
+    <button onclick="restart(16,40)">16*16,雷数40</button>
+</div>
+<div id="result" style="color:red;text-align: center"></div>
+<div style="text-align: center">
+    click:<span id="clickTimes"></span>
+</div>
+   <div id="map" style="width:800px;margin:0 auto"></div>
+
+
+
+</body>
+<script>
+    var boom_svg='<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1562164274274" class="icon" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1505" xmlns:xlink="http://www.w3.org/1999/xlink" width="20px" height="20px"><defs><style type="text/css"></style></defs><path d="M29.469002 422.261994C19.012259 422.261994 9.50613 416.558316 3.802452 406.101573c-6.654291-14.259194-0.950613-31.370228 12.357968-38.024518 33.271454-17.111033 84.604554-99.814361 126.431525-166.357269 15.209807-24.715937 30.419615-48.481261 44.678809-70.34536C239.554467 52.47355 325.109634 3.041676 416.368478 0.189837c51.3331-1.901226 89.357619 10.456743 113.122943 38.024519 30.419615 34.222067 23.765324 76.99965 22.814711 81.752715-2.851839 15.209807-17.111033 25.66655-33.271453 22.814711-15.209807-2.851839-25.66655-17.111033-22.814712-33.271454 0-0.950613 2.851839-20.913485-9.506129-35.172679-11.407356-13.308582-35.17268-19.012259-67.493521-18.061647-73.197198 2.851839-141.641332 41.82697-183.468302 105.518039-14.259194 20.913485-28.518389 44.678809-43.728196 69.394747-52.283713 84.604554-101.715587 163.50543-149.246236 187.270754-4.753065 2.851839-8.555517 3.802452-13.308581 3.802452z" fill="#E2CCB7" p-id="1506"></path><path d="M673.984592 211.225915H374.541508v-78.900876c0-16.16042 12.357969-28.518389 28.518389-28.518388h242.406306c16.16042 0 28.518389 12.357969 28.518389 28.518388v78.900876z" fill="#464650" p-id="1507"></path><path d="M523.787743 596.224166m-427.775834 0a427.775834 427.775834 0 1 0 855.551668 0 427.775834 427.775834 0 1 0-855.551668 0Z" fill="#373740" p-id="1508"></path><path d="M943.008061 509.718386C903.082316 314.842729 731.02137 168.448332 523.787743 168.448332c-236.702628 0-427.775834 191.073206-427.775834 427.775834 0 102.6662 36.123293 197.727497 96.962523 271.875308 73.197198 39.925745 155.900526 61.789843 245.258145 61.789843 251.912436 0 461.047288-180.616463 504.775484-420.170931z" fill="#464650" p-id="1509"></path><path d="M222.443434 599.076005c-15.209807 0-26.617163-12.357969-26.617163-26.617163 0-162.554817 132.135202-293.739406 293.739406-293.739406 15.209807 0 26.617163 12.357969 26.617163 26.617163s-12.357969 26.617163-26.617163 26.617163c-133.085815 0-240.50508 108.369878-240.50508 240.50508 0 15.209807-12.357969 26.617163-26.617163 26.617163z" fill="#FFFFFF" p-id="1510"></path></svg>'
+    var Init=function(map_len,mine_num){
+        this.mine_map=this.initMineMap(map_len,mine_num)
+        this.count=mine_num;
+        this.mine_num=mine_num;
+        this.gameStatus=0;// game的三种状态,0进行时,1成功,-1失败;
+    }
+    Init.prototype= {
+        initMineMap: function (map_len,mine_num) {
+            //生成9*9二维数组;生成button
+            var that=this
+            var map_root_el=document.getElementById('map');
+            map_root_el.style.cssText="display:flex;flex-flow:row wrap;width:80%;margin:0 auto"
+            var frag=document.createDocumentFragment()
+            var a=[]
+             for(var i=0;i<map_len;i++){
+                 a[i]=[]
+                 for(var j=0;j<map_len;j++){
+                     a[i][j]=0
+                     var btn=document.createElement('button')
+                     btn.setAttribute('id',i+","+j)
+//                     btn.innerHTML=i+','+j
+                     btn.style.cssText="flex:"+100/map_len+"%"+";border:1px solid #eee"
+                     btn.style.setProperty('height','2rem')
+                     btn.addEventListener('click',function myclick(e){
+                         return that.btnClick.call(that,arguments)
+                     })
+                     frag.appendChild(btn)
+                 }
+             }
+            map_root_el.appendChild(frag)
+            window.onload=function(){
+                document.getElementById('clickTimes').innerHTML=that.count
+            }
+            //生成雷的随机位置
+           for(var i=0;i<mine_num;i++){
+               var row_num= Math.floor(Math.random()*(map_len-1-0+1)+0);
+               var col_num=Math.floor(Math.random()*(map_len-1-0+1)+0);
+               while(a[row_num][col_num]==9){
+                   row_num= Math.floor(Math.random()*(map_len-1-0+1)+0);
+                   col_num=Math.floor(Math.random()*(map_len-1-0+1)+0);
+               }
+               a[row_num][col_num]=9;
+            }
+            //计算每个九宫格周围雷数
+            for(var i=0;i<a.length;i++){
+                for(var j=0;j<a[i].length;j++){
+                  if(a[i][j]==9){
+                      var surround_pos=[
+                          [i,j+1],
+                          [i,j-1],
+                          [i-1,j],
+                          [i+1,j],
+                          [i+1,j+1],
+                          [i-1,j-1],
+                          [i-1,j+1],
+                          [i+1,j-1],
+                      ]
+                      for(var k=surround_pos.length-1;k>=0;k--){
+                          if(surround_pos[k][0]>=0 && surround_pos[k][1]>=0 && surround_pos[k][0]<a.length && surround_pos[k][1]<a.length &&  a[surround_pos[k][0]][surround_pos[k][1]]!=9 ){
+                              a[surround_pos[k][0]][surround_pos[k][1]]=parseInt(a[surround_pos[k][0]][surround_pos[k][1]])+1;
+                          }
+                      }
+                  }
+                }
+            }
+            return a
+        },
+        btnClick:function(arg){
+            var e=arg[0]
+            var id=e.target.id.toString()
+            var ids=id.split(',')
+            var gezi_val=this.mine_map[ids[0]][ids[1]]
+            if(this.count==0 || this.gameStatus==-1){
+                document.getElementById('result').innerHTML='游戏已结束'
+                return
+            }
+            if(this.count==this.mine_num){
+//                showTimeOut();
+            }
+            this.count--
+            document.getElementById('clickTimes').innerHTML=this.count
+
+
+            if(gezi_val==9){
+                document.getElementById('result').innerHTML='游戏已结束'
+                this.gameStatus=-1
+               this.showAllMine();
+            }else{
+                if(this.count==0){
+                    document.getElementById('result').innerHTML='成功扫雷'
+                    this.gameStatus=1
+                    return
+                }
+                document.getElementById(ids[0]+','+ids[1]).className='active';
+                //判断是否成功,格子值等于o要扩散;不等于0;显示当前雷区。
+                if(gezi_val!=0){
+                    e.target.innerHTML=gezi_val;
+
+                }else{
+                this.showSurroundBtn(ids);
+                }
+            }
+
+        },
+        showSurroundBtn:function(ids){
+            //八个方向查找数据。
+            var i=ids[0];
+            var j=ids[1]
+
+            var surround_pos=[
+                [0,1],
+                [0,-1],
+                [-1,0],
+                [1,0],
+                [1,1],
+                [-1,-1],
+                [-1,1],
+                [1,-1],
+            ]
+            for(var k=surround_pos.length-1;k>=0;k--){
+                var r_s1=surround_pos[k][0]
+                var c_s1=surround_pos[k][1]
+                var r1=parseInt(i)+parseInt(r_s1);
+                var c1=parseInt(j)+parseInt(c_s1);
+                while(r1>=0 && c1>=0 && r1<this.mine_map.length && c1<this.mine_map.length && this.mine_map[r1][c1]!=9){
+
+                       //找到对应id btn,显示数据
+                       var target_btn_id=r1+','+c1
+                         document.getElementById(target_btn_id).className='active';
+                        if(this.mine_map[r1][c1]==0){
+
+                        }else{
+                            document.getElementById(target_btn_id).innerHTML=this.mine_map[r1][c1]
+                        }
+
+                       r1=r1+r_s1;
+                       c1=c1+c_s1;
+
+                }
+            }
+        },
+        showAllMine:function(){
+            var map_len=this.mine_map.length
+            for(var i=0;i<map_len;i++){
+                for(var j=0;j<map_len;j++){
+                    var target_btn_id=i+','+j
+                    document.getElementById(target_btn_id).className='active';
+                    if(this.mine_map[i][j]==9){
+                        var inner_html="<span style='color:red;'>"+boom_svg+"</span>"
+                    }else{
+                        var inner_html="<span style='color:black'>"+this.mine_map[i][j]+"</span>"
+                    }
+                    document.getElementById(target_btn_id).innerHTML=inner_html
+
+                }
+            }
+        },
+        fail:function(){
+            console.log('fail')
+
+        }
+
+
+    }
+
+
+    var mine_map=new Init(9,10)
+    restart=function(map_len,mine_num){
+        //销毁实例
+        mine_map=null
+        //重置dom
+        document.getElementById('map').innerHTML='';
+        document.getElementById('result').innerHTML='';
+        document.getElementById('clickTimes').innerHTML='';
+        //新的实例
+        if(map_len && mine_num){
+            mine_map=new Init(map_len,mine_num)
+        }else{
+            mine_map=new Init(9,10)
+        }
+        document.getElementById('clickTimes').innerHTML=mine_num
+    }
+
+</script>
+</html>
