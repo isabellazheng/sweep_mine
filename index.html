@@ -22,7 +22,7 @@
         background-color:cadetblue;
     }
     td.inactive:hover{
-        background-color: #5549a1;
+        /*background-color: #5549a1;*/
     }
     button{
         color:white;
@@ -33,15 +33,15 @@
 </style>
 <body>
 <div style="margin:0 auto">
-    <h1 style="text-align: center">扫雷-jquery</h1>
+    <h2 style="text-align: center">扫雷-jquery</h2>
     <div style="text-align: center;">
         <button onclick="restart()">重启</button>
-        <button onclick="restart(9,10)">9*9,雷数10</button>
-        <button onclick="restart(12,15)">12*12,雷数15</button>
-        <button onclick="restart(16,40)">16*16,雷数40</button>
+        <button onclick="restart(9,10)">初级</button>
+        <button onclick="restart(12,15)">中级</button>
+        <button onclick="restart(16,40)">高级</button>
     </div>
     <div style="text-align: center;padding-top: 20px;">
-        mine_num:<span id="mine_num"></span>
+        雷数:<span id="mine_num"></span>
         click:<span id="clickTimes"></span>
         time:<span id="time"></span>
     </div>
@@ -253,8 +253,6 @@
 
         },
     }
-
-
     var mine_map = new MineMap(9, 10)
     restart = function (map_len, mine_num) {
         //销毁实例
