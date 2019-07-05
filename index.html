@@ -173,7 +173,8 @@
                 }else{
                     this.showSurround(id_str);
                 }
-                if(this.data.mine_num==(this.data.map_len*this.data.map_len-this.data.visible_gezi)){
+                var visible_gezi=$('td.active').length-$('td svg').length
+                if(this.data.mine_num==(this.data.map_len*this.data.map_len-visible_gezi)){
                     this.success()
                 }
             }else if(e.button == 2){//右键有旗子取消旗子,没旗子插旗子
@@ -188,7 +189,6 @@
             }
         },
         showgezi:function(ids_str){
-            this.data.visible_gezi++
             var id_reform='#'+ids_str
             var target_td=$(id_reform)
             var ids=ids_str.split('_')
