@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
     <script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.js"></script>
     <title>扫雷-jquery</title>
 </head>
@@ -11,8 +12,8 @@
         color:green;
     }
     td {
-        width:20px;
-        height:20px;
+        width:30px;
+        height:30px;
         border:1px solid #eee;
         text-align: center;
         vertical-align: middle;
@@ -22,6 +23,11 @@
     }
     td.inactive:hover{
         background-color: #5549a1;
+    }
+    button{
+        color:white;
+        background-color: #facc61;
+        margin-right: 10px;
     }
 
 </style>
@@ -42,7 +48,7 @@
     <div id="result" style="color:red;text-align: center;padding-top: 20px;">
 
     </div>
-    <div id="map" style="min-width:400px;display: flex;justify-content: center;flex-flow: row nowrap">
+    <div id="map" style="display: flex;justify-content: center;flex-flow: row nowrap">
     </div>
 
     <audio src="./boom.wav" preload="preload">
